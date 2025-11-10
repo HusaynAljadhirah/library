@@ -17,6 +17,10 @@ return new class extends Migration
             $table->date('published_date')->nullable();
             $table->text('description')->nullable();
             $table->string('cover_image', 2048)->nullable();
+            $table->string('pdf_path', 2048);
+            $table->unsignedBigInteger('pages')->nullable();
+            $table->unsignedBigInteger('pdf_size')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

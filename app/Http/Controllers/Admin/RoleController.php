@@ -2,69 +2,60 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Role;
 use Illuminate\Http\Request;
+use App\Models\Role;
+use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignRoleRequest;
+use App\Http\Requests\StoreRoleRequest;
+use App\Http\Resources\RoleResource;
 
 class RoleController extends Controller
 {
     /**
-     * Display a listing of roles.
+     * List all roles (admin only)
      */
     public function index()
     {
-        return response()->json(Role::all());
+        return response()->json(Role::paginate(10));
     }
 
     /**
-     * Store a newly created role in storage.
+     * Create a new role (admin only)
      */
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|unique:roles,name',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $role = Role::create($validated);
 
-        return response()->json($role, 201);
+        return new RoleResource($role);
     }
 
     /**
-     * Display the specified role.
+     * Assign a role to a user (admin only)
      */
-    public function show($id)
+    public function assignRole(AssignRoleRequest $request, $userId)
     {
-        $role = Role::findOrFail($id);
-        return response()->json($role);
+        $validated = $request->validated();
+
+        $user = User::findOrFail($userId);
+        $user->role_id = $validated['role_id'];
+       
+        return new RoleResource($user->role);
     }
 
     /**
-     * Update the specified role in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $role = Role::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => 'required|string|unique:roles,name,' . $role->id,
-            'description' => 'nullable|string',
-        ]);
-
-        $role->update($validated);
-
-        return response()->json($role);
-    }
-
-    /**
-     * Remove the specified role from storage.
+     * Delete a role (admin only)
      */
     public function destroy($id)
     {
         $role = Role::findOrFail($id);
         $role->delete();
 
-        return response()->json(['message' => 'Role deleted successfully']);
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Role deleted successfully',
+        ]);
     }
 }

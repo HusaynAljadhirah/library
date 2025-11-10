@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('borrowed_at')->default(now());
             $table->date('due_at')->nullable();
             $table->date('returned_at')->nullable();
+               $table->softDeletes();
             $table->timestamps();
         });
     }

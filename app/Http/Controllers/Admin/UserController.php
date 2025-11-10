@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\UserRequest;
+use App\Http\Resources\UserResource;
+use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -12,15 +16,22 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return UserResource::collection(User::paginate(10));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        $defaultRole = Role::where('name', 'user')->firstOrFail();
+        $validated['role_id'] = $defaultRole->id;
+        
+        $user = User::create($validated);
+        
+        return new UserResource($user);
     }
 
     /**
@@ -28,7 +39,9 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        
+        return new UserResource($user);
     }
 
     /**
@@ -36,7 +49,16 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // pass??
+        $user = User::findOrFail($id);
+
+        $validated = $request->validated();
+
+        $user->update($validated);
+
+        return new UserResource($user);
+
+
     }
 
     /**
@@ -44,6 +66,18 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return new UserResource($user);
+
+    }
+
+    public function restore(string $id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->restore();
+        return new UserResource($user);
+
     }
 }

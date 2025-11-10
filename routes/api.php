@@ -5,39 +5,42 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Admin\RoleController;
-
-// Route::middleware('auth:sanctum')->group(function () {
-
-//     Route::get('/admin', function () {
-//         return response()->json(['message' => 'Welcome Admin']);
-//     })->middleware('role:admin');
-
-//     Route::get('/librarian', function () {
-//         return response()->json(['message' => 'Welcome Librarian']);
-//     })->middleware('role:librarian');
-
-//     Route::get('/user', function () {
-//         return response()->json(['message' => 'Welcome User']);
-//     })->middleware('role:user');
-// });
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Librarian\AuthorController;
+use App\Http\Controllers\Librarian\BookController;
+use App\Http\Controllers\Librarian\CategoryController;
+use App\Http\Controllers\Librarian\BorrowController;
+use App\Http\Controllers\Admin\UserController;
 
 
+
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::apiResource('roles', RoleController::class);
+    Route::post('/roles/assign/{userId}', [RoleController::class, 'assignRole']);
+
+    Route::apiResource('users', UserController::class);
+    Route::post('/users/restore/{id}', [UserController::class, 'restore']);
 });
 
-Route::post('/login', function (Request $request) {
-    $user = User::where('email', $request->email)->first();
+Route::middleware(['auth:sanctum', 'role:librarian'])->group(function () {
+   Route::apiResource('authors', AuthorController::class);
+    Route::post('/authors/restore/{id}', [AuthorController::class, 'restore']);
 
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        return response()->json(['message' => 'Invalid credentials'], 401);
-    }
-
-    $token = $user->createToken('api-token')->plainTextToken;
-
-    return response()->json([
-        'token' => $token,
-        'role' => $user->role->name,
-    ]);
+    Route::apiResource('books', BookController::class);
+    Route::post('/books/restore/{id}', [BookController::class, 'restore']);
+    
+    Route::apiResource('categories', CategoryController::class);
+    Route::post('/categories/restore/{id}', [CategoryController::class, 'restore']);
+    
+    Route::apiResource('borrows', BorrowController::class);
+    Route::post('/borrows/restore/{id}', [BorrowController::class, 'restore']);
 });
+
+
+
+
