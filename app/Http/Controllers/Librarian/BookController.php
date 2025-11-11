@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Librarian;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use Illuminate\Http\Request;
-use App\Http\Resources\BookResource;
+use App\Http\Resources\UpdateBookResource;
 use App\Http\Resources\AuthorResource;
 use App\Models\Author;
 use App\Http\Requests\StoreBookRequest;
@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class BookController extends Controller
 {
 
-    protected string $pdfDisk = 's3';
+    protected string $pdfDisk = 'local';
     protected string $imageDisk = 'public';
 
     /**
@@ -76,7 +76,7 @@ class BookController extends Controller
 
         $book->update($validated);
 
-        return new UpdateBookRequest($book);
+        return new UpdateBookResource($book);
     }
 
     /**
