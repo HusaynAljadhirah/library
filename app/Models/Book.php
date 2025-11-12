@@ -19,6 +19,10 @@ class Book extends Model
         'description',
         'cover_image',
         'author_id',
+        'category_id',
+        'pdf_path',
+        'pages',
+        'pdf_size',
     ];
 
     public function author()

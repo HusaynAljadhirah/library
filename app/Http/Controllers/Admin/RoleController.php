@@ -9,15 +9,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Resources\RoleResource;
+use App\QueryBuilders\RoleQueryBuilder;
 
 class RoleController extends Controller
 {
     /**
      * List all roles (admin only)
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Role::paginate(10));
+        $roles = RoleQueryBuilder::build()->paginate(10);
+        return RoleResource::collection($roles);
     }
 
     /**

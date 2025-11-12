@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCategoryRequest extends FormRequest
+class UserIndexRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->hasRole('librarian');
+        return $this->user()->hasRole('admin');
     }
 
     /**
@@ -21,9 +21,11 @@ class StoreCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
-         return [
-            'name' => 'required|string|max:255|unique:categories,name,',
-            'description' => 'nullable|string',
+        return [
+            'filter.name' => 'sometimes|string|max:255',
+            'filter.status' => 'sometimes|boolean',
+            'sort' => 'sometimes|string|in:name,created_at,-name,-created_at',
+            'page' => 'sometimes|integer|min:1',
         ];
     }
 }

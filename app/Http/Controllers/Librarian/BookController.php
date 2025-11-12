@@ -11,6 +11,10 @@ use App\Models\Author;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use Illuminate\Support\Str;
+use App\Http\Resources\BookResource;
+use App\QueryBuilders\BookQueryBuilder;
+use App\Services\FileStorageService;
+
 
 class BookController extends Controller
 {
@@ -21,38 +25,46 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-         return AuthorResource::collection(Author::paginate(10));
-
+        $books = BookQueryBuilder::build()->paginate(10);
+        return BookResource::collection($books);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBookRequest $request)
+    public function store(StoreBookRequest $request, FileStorageService $storage)
     {
         $validated = $request->validated();
 
-        $pdf = $request->file('pdf');
-        $pdfPath = $pdf->storeAs('books/pdfs', Str::uuid() . '.' . $pdf->getClientOriginalExtension(), $this->pdfDisk);
-       
-        
-       $coverPath = null;
-        if ($request->hasFile('cover_image')) { 
-            $coverImage = $request->file('cover_image');
-            $coverPath = $coverImage->storeAs('books/covers', Str::uuid() . '.' . $coverImage->getClientOriginalExtension(), $this->imageDisk);
+        // Determine PDF path/size: use provided pdf_path or store uploaded pdf
+        $pdfPath = $validated['pdf_path'] ?? null;
+        $pdfSize = $validated['pdf_size'] ?? null;
+        if (!$pdfPath && $request->hasFile('pdf')) {
+            $storedPdf = $storage->storePdf($request->file('pdf'), $this->pdfDisk, 'books/pdfs');
+            $pdfPath = $storedPdf['path'];
+            $pdfSize = $storedPdf['size'];
         }
 
-        $book = Book::create($validated + [
-            'pdf_path' => $pdfPath,
-            'cover_image_path' => $coverPath,
-            'pages' => $validated['pages'] ?? null,
-            'pdf_size' => $pdf->getSize(),
-        ]);
-        
+        // Handle cover image upload if provided
+        if ($request->hasFile('cover_image')) {
+            $coverPath = $storage->storeImage($request->file('cover_image'), $this->imageDisk, 'books/covers');
+            $validated['cover_image'] = $coverPath;
+        }
 
-        return new BookResource($book);
+        // Merge computed pdf_path/pdf_size into payload
+        if ($pdfPath) {
+            $validated['pdf_path'] = $pdfPath;
+        }
+        if ($pdfSize) {
+            $validated['pdf_size'] = $pdfSize;
+        }
+
+        $book = Book::create($validated);
+        return (new BookResource($book))
+            ->response()
+            ->setStatusCode(201);
 
     }
 
@@ -61,8 +73,8 @@ class BookController extends Controller
      */
     public function show(string $id)
     {
-        $book = Book::findOrFail($id);
-        return response()->json($book);
+    $book = Book::findOrFail($id);
+    return new BookResource($book);
     }
 
     /**
@@ -76,7 +88,7 @@ class BookController extends Controller
 
         $book->update($validated);
 
-        return new UpdateBookResource($book);
+        return new BookResource($book);
     }
 
     /**

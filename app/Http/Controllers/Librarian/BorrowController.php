@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Librarian;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\BorrowRequest;
 use Illuminate\Http\Request;
 use App\Models\Borrow;
 use App\Http\Resources\BorrowResource;
 use App\Http\Requests\StoreBorrowRequest;
 use App\Http\Requests\UpdateBorrowRequest;
+use App\QueryBuilders\BorrowQueryBuilder;
 
 
 class BorrowController extends Controller
@@ -16,11 +16,13 @@ class BorrowController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-       return BorrowResource::collection(Borrow::paginate(10));
+     public function index(Request $request)
+     {
 
-    }
+        $borrows = BorrowQueryBuilder::build()->paginate(10);
+        return BorrowResource::collection($borrows);
+
+     }
 
     /**
      * Store a newly created resource in storage.

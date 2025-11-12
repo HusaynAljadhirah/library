@@ -8,16 +8,22 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
+use App\QueryBuilders\UserQueryBuilder;
+use App\Http\Requests\UserIndexRequest;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        return UserResource::collection(User::paginate(10));
-    }
+  
+public function index(UserIndexRequest $request)
+{
+    // Using UserQueryBuilder to handle filtering and sorting
+    $users = UserQueryBuilder::build()->paginate(10);
+    return UserResource::collection($users);
+}
+
 
     /**
      * Store a newly created resource in storage.

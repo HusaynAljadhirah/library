@@ -33,6 +33,7 @@ class User extends Authenticatable
         'bio',
         'phone_number',
         'password',
+        'status',
         'role_id',
     ];
 

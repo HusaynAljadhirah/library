@@ -30,6 +30,7 @@ class UserRequest extends FormRequest
             'picture' => 'nullable|string',
             'bio' => 'nullable|string',
             'phone_number' => 'nullable|string|max:20',
+            'status' => 'boolean',
             'role_id' => 'nullable|exists:roles,id',
         ];
         $defaultRole = Role::where('name', 'user')->firstOrFail();

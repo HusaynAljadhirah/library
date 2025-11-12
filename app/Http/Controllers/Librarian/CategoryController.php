@@ -9,15 +9,17 @@ use App\Models\Category;
 use App\Http\Resources\CategoryResource;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\QueryBuilders\CategoryQueryBuilder;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return CategoryResource::collection(Category::paginate(10));
+        // $categories = CategoryQueryBuilder::paginate($request, 10);
+        // return CategoryResource::collection($categories);
     }
 
     /**
