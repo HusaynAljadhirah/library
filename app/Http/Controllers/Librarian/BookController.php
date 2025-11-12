@@ -38,32 +38,21 @@ class BookController extends Controller
     {
         $validated = $request->validated();
 
-        // Determine PDF path/size: use provided pdf_path or store uploaded pdf
-        $pdfPath = $validated['pdf_path'] ?? null;
-        $pdfSize = $validated['pdf_size'] ?? null;
-        if (!$pdfPath && $request->hasFile('pdf')) {
-            $storedPdf = $storage->storePdf($request->file('pdf'), $this->pdfDisk, 'books/pdfs');
-            $pdfPath = $storedPdf['path'];
-            $pdfSize = $storedPdf['size'];
-        }
+        // Require a PDF upload and store it
+        $storedPdf = $storage->storePdfFor('book', $request->file('pdf'), null, $this->pdfDisk);
+        $validated['pdf_path'] = $storedPdf['path'];
+        $validated['pdf_size'] = $storedPdf['size'];
 
         // Handle cover image upload if provided
         if ($request->hasFile('cover_image')) {
             $validated['cover_image'] = $storage->storePhotoFor('book', $request->file('cover_image'));
         }
 
-        // Merge computed pdf_path/pdf_size into payload
-        if ($pdfPath) {
-            $validated['pdf_path'] = $pdfPath;
-        }
-        if ($pdfSize) {
-            $validated['pdf_size'] = $pdfSize;
-        }
+        // Merge cover image handled above; pdf_path/pdf_size already set
 
         $book = Book::create($validated);
-        return (new BookResource($book))
-            ->response()
-            ->setStatusCode(201);
+
+        return new BookResource($book);
 
     }
 

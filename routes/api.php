@@ -11,6 +11,7 @@ use App\Http\Controllers\Librarian\BookController;
 use App\Http\Controllers\Librarian\CategoryController;
 use App\Http\Controllers\Librarian\BorrowController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\User\LibraryController;
 
 
 
@@ -40,6 +41,12 @@ Route::middleware(['auth:sanctum', 'role:librarian'])->group(function () {
     
     Route::apiResource('borrows', BorrowController::class);
     Route::post('/borrows/restore/{id}', [BorrowController::class, 'restore']);
+});
+
+// Authenticated user features: request access (borrow) and view book
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/books/{book}/request-access', [LibraryController::class, 'requestAccess']);
+    Route::get('/books/{book}/view', [LibraryController::class, 'view'])->middleware('can:view,book');
 });
 
 

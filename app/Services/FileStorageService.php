@@ -5,6 +5,8 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FileStorageService
 {
@@ -56,6 +58,25 @@ class FileStorageService
     }
 
     /**
+     * Store a PDF for a given entity using standard directories and return [path,size].
+     * Entities: 'book' => books/pdfs, 'borrow' => borrows/pdfs, 'user' => users/pdfs
+    */
+    public function storePdfFor(string $entity, UploadedFile $file, ?string $oldPath = null, string $disk = 'local'): array
+    {
+        $directories = [
+            'book'   => 'books/pdfs',
+        ];
+
+        $directory = $directories[$entity] ?? 'pdfs';
+
+        if ($oldPath && Storage::disk($disk)->exists($oldPath)) {
+            Storage::disk($disk)->delete($oldPath);
+        }
+
+        return $this->storePdf($file, $disk, $directory);
+    }
+
+    /**
      * Store a photo for a given entity with a standard directory convention.
      * Entities: 'author' => authors/photos, 'user' => users/photos, 'book' => books/covers
      */
@@ -74,5 +95,24 @@ class FileStorageService
         }
 
         return $this->storeImage($file, $disk, $directory);
+    }
+
+    /**
+     * Stream a PDF from storage with proper headers.
+     */
+    public function streamPdf(string $path, string $disk = 'local', ?string $filename = null, bool $inline = true): BinaryFileResponse
+    {
+        if (empty($path) || !Storage::disk($disk)->exists($path)) {
+            throw new NotFoundHttpException('File not found');
+        }
+
+        $fullPath = Storage::disk($disk)->path($path);
+        $name = $filename ?: basename($fullPath);
+        $disposition = $inline ? 'inline' : 'attachment';
+
+        return response()->file($fullPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => $disposition . '; filename="' . $name . '"',
+        ]);
     }
 }

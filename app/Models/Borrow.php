@@ -11,6 +11,7 @@ class Borrow extends Model
     use HasUuids, SoftDeletes;
     public $incrementing = false;
     protected $keyType = 'string';
+    protected $table = 'borrow';
     
     protected $fillable = [
         'user_id',

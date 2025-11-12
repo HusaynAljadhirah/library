@@ -24,12 +24,13 @@ class StoreBookRequest extends FormRequest
         
         return [
             'title'          => 'required|string|max:255',
-            'published_date' => 'required|date',
+            'author_id'      => 'required|exists:authors,id',
+            'published_date' => 'nullable|date',
             'description'    => 'nullable|string',
             'cover_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'pdf'            => 'required|file|mimes:pdf|max:51200',
-            'author_id'      => 'required|exists:authors,id',
             'pages'          => 'nullable|integer|min:1',
+            'category_id'    => 'nullable|exists:categories,id',
         ];
     }
 }
