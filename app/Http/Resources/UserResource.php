@@ -14,6 +14,12 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $data = parent::toArray($request);
+        if (!empty($this->picture)) {
+            $data['picture_url'] = asset('storage/' . ltrim($this->picture, '/'));
+        } else {
+            $data['picture_url'] = null;
+        }
+        return $data;
     }
 }

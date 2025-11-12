@@ -14,6 +14,13 @@ class AuthorResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $data = parent::toArray($request);
+        if (!empty($this->photo)) {
+            $path = ltrim($this->photo, '/');
+            $data['photo_url'] = asset('storage/' . $path);
+        } else {
+            $data['photo_url'] = null;
+        }
+        return $data;
     }
 }

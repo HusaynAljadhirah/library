@@ -14,6 +14,12 @@ class BookResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $data = parent::toArray($request);
+        if (!empty($this->cover_image)) {
+            $data['cover_image_url'] = asset('storage/' . ltrim($this->cover_image, '/'));
+        } else {
+            $data['cover_image_url'] = null;
+        }
+        return $data;
     }
 }

@@ -49,8 +49,7 @@ class BookController extends Controller
 
         // Handle cover image upload if provided
         if ($request->hasFile('cover_image')) {
-            $coverPath = $storage->storeImage($request->file('cover_image'), $this->imageDisk, 'books/covers');
-            $validated['cover_image'] = $coverPath;
+            $validated['cover_image'] = $storage->storePhotoFor('book', $request->file('cover_image'));
         }
 
         // Merge computed pdf_path/pdf_size into payload
@@ -80,11 +79,15 @@ class BookController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBookRequest $request, string $id)
+    public function update(UpdateBookRequest $request, string $id, FileStorageService $storage)
     {
         $book = Book::findOrFail($id);
 
         $validated = $request->validated();
+
+        if ($request->hasFile('cover_image')) {
+            $validated['cover_image'] = $storage->storePhotoFor('book', $request->file('cover_image'), $book->cover_image);
+        }
 
         $book->update($validated);
 

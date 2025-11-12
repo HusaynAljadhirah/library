@@ -51,7 +51,7 @@ class RoleController extends Controller
     /**
      * Delete a role (admin only)
      */
-    public function destroy($id)
+    public function destroy(string $id)
     {
         $role = Role::findOrFail($id);
         $role->delete();

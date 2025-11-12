@@ -10,6 +10,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\QueryBuilders\UserQueryBuilder;
 use App\Http\Requests\UserIndexRequest;
+use App\Services\FileStorageService;
 
 class UserController extends Controller
 {
@@ -28,12 +29,16 @@ public function index(UserIndexRequest $request)
     /**
      * Store a newly created resource in storage.
      */
-    public function store(UserRequest $request)
+    public function store(UserRequest $request, FileStorageService $storage)
     {
         $validated = $request->validated();
 
         $defaultRole = Role::where('name', 'user')->firstOrFail();
         $validated['role_id'] = $defaultRole->id;
+
+        if ($request->hasFile('picture')) {
+            $validated['picture'] = $storage->storePhotoFor('user', $request->file('picture'));
+        }
         
         $user = User::create($validated);
         
@@ -53,12 +58,15 @@ public function index(UserIndexRequest $request)
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UserRequest $request, string $id, FileStorageService $storage)
     {
-        // pass??
         $user = User::findOrFail($id);
 
         $validated = $request->validated();
+
+        if ($request->hasFile('picture')) {
+            $validated['picture'] = $storage->storePhotoFor('user', $request->file('picture'), $user->picture);
+        }
 
         $user->update($validated);
 
@@ -75,8 +83,10 @@ public function index(UserIndexRequest $request)
         $user = User::findOrFail($id);
         $user->delete();
 
-        return new UserResource($user);
-
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'User deleted successfully',
+        ], 200);
     }
 
     public function restore(string $id)

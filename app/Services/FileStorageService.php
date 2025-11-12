@@ -32,4 +32,47 @@ class FileStorageService
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         return $file->storeAs($directory, $filename, $disk);
     }
+
+    /**
+     * Store an author photo under a standard directory, optionally removing the old one.
+     * Returns the stored path.
+     */
+    public function storeAuthorPhoto(UploadedFile $file, ?string $oldPath = null, string $disk = 'public'): string
+    {
+        if ($oldPath && Storage::disk($disk)->exists($oldPath)) {
+            Storage::disk($disk)->delete($oldPath);
+        }
+        return $this->storeImage($file, $disk, 'authors/photos');
+    }
+
+    /**
+     * Delete a file from the given disk if it exists.
+     */
+    public function deleteIfExists(?string $path, string $disk = 'public'): void
+    {
+        if ($path && Storage::disk($disk)->exists($path)) {
+            Storage::disk($disk)->delete($path);
+        }
+    }
+
+    /**
+     * Store a photo for a given entity with a standard directory convention.
+     * Entities: 'author' => authors/photos, 'user' => users/photos, 'book' => books/covers
+     */
+    public function storePhotoFor(string $entity, UploadedFile $file, ?string $oldPath = null, string $disk = 'public'): string
+    {
+        $directories = [
+            'author' => 'authors/photos',
+            'user'   => 'users/photos',
+            'book'   => 'books/covers',
+        ];
+
+        $directory = $directories[$entity] ?? 'photos';
+
+        if ($oldPath && Storage::disk($disk)->exists($oldPath)) {
+            Storage::disk($disk)->delete($oldPath);
+        }
+
+        return $this->storeImage($file, $disk, $directory);
+    }
 }

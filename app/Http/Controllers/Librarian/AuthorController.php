@@ -9,6 +9,7 @@ use App\Http\Resources\AuthorResource;
 use App\Models\Author;
 use Illuminate\Http\Request;
 use App\QueryBuilders\AuthorQueryBuilder;
+use App\Services\FileStorageService;
 
 class AuthorController extends Controller
 {
@@ -24,14 +25,16 @@ class AuthorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreAuthorRequest $request)
+    public function store(StoreAuthorRequest $request, FileStorageService $storage)
     {
         $validated = $request->validated();
 
-        // photo soon
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $storage->storePhotoFor('author', $request->file('photo'));
+        }
 
         $author = Author::create($validated);
-         return new AuthorResource($author);
+        return new AuthorResource($author);
     }
 
     /**
@@ -40,22 +43,21 @@ class AuthorController extends Controller
     public function show(string $id)
     {
         $author = Author::findOrFail($id);
-        return response()->json($author);
+        return new AuthorResource($author);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateAuthorRequest $request, string $id)
+    public function update(UpdateAuthorRequest $request, string $id, FileStorageService $storage)
     {
         $author = Author::findOrFail($id);
 
         $validated = $request->validated();
 
-        // if ($request->hasFile('photo')) {
-        //     $path = $request->file('photo')->store('authors', 'public');
-        //     $validated['photo'] = $path;
-        // }
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $storage->storePhotoFor('author', $request->file('photo'), $author->photo);
+        }
 
         $author->update($validated);
 
