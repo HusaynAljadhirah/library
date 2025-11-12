@@ -20,6 +20,15 @@ class BookResource extends JsonResource
         } else {
             $data['cover_image_url'] = null;
         }
+        if ($this->relationLoaded('author') && $this->author) {
+            $data['author'] = new AuthorResource($this->author);
+        }
+        if ($this->relationLoaded('category') && $this->category) {
+            $data['category'] = new CategoryResource($this->category);
+        }
+        if (isset($this->borrows_count)) {
+            $data['borrows_count'] = $this->borrows_count;
+        }
         return $data;
     }
 }

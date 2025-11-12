@@ -20,6 +20,9 @@ class UserResource extends JsonResource
         } else {
             $data['picture_url'] = null;
         }
+        if ($this->relationLoaded('role') && $this->role) {
+            $data['role'] = new RoleResource($this->role);
+        }
         return $data;
     }
 }

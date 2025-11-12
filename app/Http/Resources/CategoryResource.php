@@ -14,6 +14,10 @@ class CategoryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $data = parent::toArray($request);
+        if (isset($this->books_count)) {
+            $data['books_count'] = $this->books_count;
+        }
+        return $data;
     }
 }

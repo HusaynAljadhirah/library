@@ -21,6 +21,9 @@ class AuthorResource extends JsonResource
         } else {
             $data['photo_url'] = null;
         }
+        if (isset($this->books_count)) {
+            $data['books_count'] = $this->books_count;
+        }
         return $data;
     }
 }

@@ -51,8 +51,12 @@ class BookController extends Controller
         // Merge cover image handled above; pdf_path/pdf_size already set
 
         $book = Book::create($validated);
+        // Ensure related data appears in the response
+        $book->load(['author', 'category'])->loadCount(['borrows']);
 
-        return new BookResource($book);
+        return (new BookResource($book))
+            ->response()
+            ->setStatusCode(201);
 
     }
 
@@ -61,8 +65,10 @@ class BookController extends Controller
      */
     public function show(string $id)
     {
-    $book = Book::findOrFail($id);
-    return new BookResource($book);
+        $book = Book::with(['author', 'category'])
+            ->withCount(['borrows'])
+            ->findOrFail($id);
+        return new BookResource($book);
     }
 
     /**
@@ -79,6 +85,8 @@ class BookController extends Controller
         }
 
         $book->update($validated);
+        // Return with fresh relations for consistency
+        $book->load(['author', 'category'])->loadCount(['borrows']);
 
         return new BookResource($book);
     }
