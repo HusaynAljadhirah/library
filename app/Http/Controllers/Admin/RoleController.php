@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Resources\RoleResource;
+use App\Http\Resources\UserResource;
 use App\QueryBuilders\RoleQueryBuilder;
 
 class RoleController extends Controller
@@ -41,10 +42,10 @@ class RoleController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::findOrFail($userId);
-        $user->role_id = $validated['role_id'];
-       
-        return new RoleResource($user->role);
+    $user = User::findOrFail($userId);
+    $user->role_id = $validated['role_id'];
+    $user->save();
+    return new UserResource($user->load('role'));
     }
 
     /**
@@ -54,10 +55,16 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
         $role->delete();
-
         return response()->json([
-            'status'  => 'success',
-            'message' => 'Role deleted successfully',
+            'message' => 'Role deleted successfully.'
         ]);
+    }
+
+    public function restore(string $id)
+    {
+        $role = Role::withTrashed()->findOrFail($id);
+        $role->restore();
+        return new RoleResource($role);
+
     }
 }

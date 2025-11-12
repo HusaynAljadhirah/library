@@ -22,6 +22,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::apiResource('roles', RoleController::class);
     Route::post('/roles/assign/{userId}', [RoleController::class, 'assignRole']);
+    Route::post('/roles/restore/{id}', [RoleController::class, 'restore']);
 
     Route::apiResource('users', UserController::class);
     Route::post('/users/restore/{id}', [UserController::class, 'restore']);
