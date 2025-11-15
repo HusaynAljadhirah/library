@@ -20,6 +20,7 @@ class BorrowService
     {
         $existing = Borrow::where('user_id', $user->id)
             ->where('book_id', $book->id)
+            ->whereIn('status', ['pending', 'approved', 'borrowed'])
             ->whereNull('returned_at')
             ->first();
 
@@ -30,7 +31,7 @@ class BorrowService
         return Borrow::create([
             'user_id'     => $user->id,
             'book_id'     => $book->id,
-            'status'      => 'borrowed',
+            'status'      => 'pending',  // Changed to pending for approval
             'borrowed_at' => now(),
             'due_at'      => now()->addDays(14),
         ]);

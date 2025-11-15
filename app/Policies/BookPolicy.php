@@ -12,6 +12,7 @@ class BookPolicy
     {
         return Borrow::where('user_id', $user->id)
             ->where('book_id', $book->id)
+            ->whereIn('status', ['approved', 'borrowed'])
             ->whereNull('returned_at')
             ->exists();
     }

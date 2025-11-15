@@ -84,4 +84,36 @@ class BorrowController extends Controller
             'borrow'    => $borrow,
         ], 200);
     }
+
+    /**
+     * Approve a borrow request.
+     */
+    public function approve(string $id)
+    {
+        $borrow = Borrow::findOrFail($id);
+
+        if ($borrow->status !== 'pending') {
+            return response()->json(['message' => 'Borrow is not pending'], 400);
+        }
+
+        $borrow->update(['status' => 'approved']);
+
+        return new BorrowResource($borrow);
+    }
+
+    /**
+     * Reject a borrow request.
+     */
+    public function reject(string $id)
+    {
+        $borrow = Borrow::findOrFail($id);
+
+        if ($borrow->status !== 'pending') {
+            return response()->json(['message' => 'Borrow is not pending'], 400);
+        }
+
+        $borrow->update(['status' => 'rejected']);
+
+        return new BorrowResource($borrow);
+    }
 }

@@ -29,7 +29,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::post('/users/restore/{id}', [UserController::class, 'restore']);
 });
 
-Route::middleware(['auth:sanctum', 'role:librarian'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin,librarian'])->group(function () {
    Route::apiResource('authors', AuthorController::class);
     Route::post('/authors/restore/{id}', [AuthorController::class, 'restore']);
 
@@ -41,10 +41,14 @@ Route::middleware(['auth:sanctum', 'role:librarian'])->group(function () {
     
     Route::apiResource('borrows', BorrowController::class);
     Route::post('/borrows/restore/{id}', [BorrowController::class, 'restore']);
+    Route::put('/borrows/{id}/approve', [BorrowController::class, 'approve']);
+    Route::put('/borrows/{id}/reject', [BorrowController::class, 'reject']);
 });
 
 // Authenticated user features: request access (borrow) and view book
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/books', [BookController::class, 'index']);
+    Route::get('/books/{book}', [BookController::class, 'show']);
     Route::post('/books/{book}/request-access', [LibraryController::class, 'requestAccess']);
     Route::get('/books/{book}/view', [LibraryController::class, 'view'])->middleware('can:view,book');
 });

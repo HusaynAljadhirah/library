@@ -15,12 +15,20 @@ class RoleMiddleware
      */
      public function handle(Request $request, Closure $next, $role)
     {
-                $user = $request->user();
+        $user = $request->user();
 
-        if (!$user || !$user->hasRole($role)) {
+        if (!$user) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        return $next($request);
+        // Allow multiple roles separated by comma
+        $roles = explode(',', $role);
+        foreach ($roles as $r) {
+            if ($user->hasRole(trim($r))) {
+                return $next($request);
+            }
+        }
+
+        return response()->json(['message' => 'Forbidden'], 403);
     }
 }
